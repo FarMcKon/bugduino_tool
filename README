@@ -1,9 +1,13 @@
-This is the code and tools to build a 'Tool' plugin for the Arduino IDE (based on the Processing IDE). The tool this builds will enable uploading an Arduino sketch to a bugduino module via a network connection.
+This is the code and tools to build a 'Tool' plugin for the Arduino IDE (based on the Processing IDE). The tool build by this project will enable uploading an Arduino sketch to a bugduino module via a network connection.
 
 
-= Setup.sh = 
-Run the first time you check this out, to setup the environemnt to build the bugduino tool.
+= setup.sh = 
+Run this the first time you check this out, to setup the environemnt to build the bugduino tool.
 
-= Make.sh  = 
-Builds the bugduino tool, and copies it into ~/sketchbook/tool/<TOOLNAME> if possible. 
+= make.sh  = 
+Builds the bugduino tool for the IDE.  If possible, it copies that tool into ~/sketchbook/tool/<TOOLNAME>/tool/<JAR_NAME> , which is the Processing/Arduino specification for an external tool.
+
+= installBugduinoTool.sh =
+This is a shell script for an end user to install the bugduino tool on their own linux machine
+
 
