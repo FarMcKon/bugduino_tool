@@ -1,3 +1,5 @@
 This is the code and tools to build a 'Tool' plugin for the Arduino IDE (based on the Processing IDE). The tool this builds will enable uploading an Arduino sketch to a bugduino module via a network connection.
 
+= FetchAndBuild.sh =
+
 
