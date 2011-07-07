@@ -1,0 +1,3 @@
+# files in the arduino_src directory are fetched from another repository 
+# for cross compiling
+arduino_src
