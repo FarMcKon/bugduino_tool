@@ -63,7 +63,7 @@ public class ProgramBugduino implements Tool {
 	int slot;		/* target slot the bugduino is loaded into/on on the BugBase */ 
 	String ipAddr; /* IP address of the BugBase on the local network */
     final int bugduinoPort= 8806; /* port used for the TCP/IP data transfer */
-	final boolean verbose = true; //for debugging
+	final boolean verbose = false; //for debugging
 	
 	/* Standard Processing IDE tool init function. 
 	 */
