@@ -63,7 +63,7 @@ public class ProgramBugduino implements Tool {
 	int slot;		/* target slot the bugduino is loaded into/on on the BugBase */ 
 	String ipAddr; /* IP address of the BugBase on the local network */
     final int bugduinoPort= 8806; /* port used for the TCP/IP data transfer */
-	final boolean verbose = false; //for debugging
+	final boolean verbose = true; //for debugging
 	
 	/* Standard Processing IDE tool init function. 
 	 */
@@ -113,11 +113,19 @@ public class ProgramBugduino implements Tool {
 	
 	tmpBuildFolder.mkdirs();
  */
-	String foundName;
-    // build the sketch
+	String foundName = sk.getPrimaryFile().getName();
+	System.out.println("foundName a: "+foundName);
+	if(foundName.endsWith(".pde") ){
+		foundName = foundName.substring(0, foundName.length() - 4);
+		foundName = foundName.concat(".cpp.hex");
+	}
+	System.out.println("foundName: "+foundName);
+    // use to be able to build the sketch
+	//but sk.build is off-limits now...
+	/*
 	try{
 		if(this.verbose)  System.out.println( "buiding code." );
-	    foundName = sk.build(this.verbose);
+	    //`foundName = sk.build(this.verbose);
 	    // (already reported) error during export, exit this function
 	    if (foundName == null) {
 			System.err.println("no valid foundname from sk.build");
@@ -127,7 +135,7 @@ public class ProgramBugduino implements Tool {
 		e.printStackTrace();
 		return;
 	}
-	
+	*/
 	if(keepSettings < 0) {
 		System.err.println("Error in generating settings: " + keepSettings);
 	}
@@ -137,12 +145,20 @@ public class ProgramBugduino implements Tool {
 	System.out.println(sk.getDataFolder().getPath()+ " <-df\n");
 	System.out.println(tempBuildFolder.getPath()+ " <-bf\n");
 
-	boolean status = sendAVRProgramToBUG( new File( tempBuildFolder.getPath() + "/" + foundName + ".hex" ),
+	File avrFile = new File( tempBuildFolder.getPath() + "/" + foundName );
+	
+	System.out.println("avr filename: "+ avrFile);
+	if(avrFile.exists()) {
+
+		boolean status = sendAVRProgramToBUG( avrFile,
 								this.ipAddr, this.bugduinoPort, this.slot, this.verbose );
  	
-	if(this.verbose) System.out.println("sendAVRProgramToBUG status: " + status);
- 	if(this.verbose) System.out.println("keepSettings: " + keepSettings);
-
+		if(this.verbose) System.out.println("sendAVRProgramToBUG status: " + status);
+	 	if(this.verbose) System.out.println("keepSettings: " + keepSettings);
+	}
+	else {
+		System.err.println("avr file does not exist. Please rebuild your sketch");
+	}
 	//user specified one-time settings, wipe out settings
  	if(keepSettings != 1) { 
 		this.wipeSettings();

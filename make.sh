@@ -12,6 +12,7 @@ START_DIR=`pwd`
 
 echo "build Arduino jars, so we can comile against them"
 cd arduino_src/Arduino/build/
+ant clean
 ant build
 echo "Arduino build will copy /shared ${TOOL_NAmE} into linux work dir for us"
 cd  linux/work/tools/${TOOL_NAME}
