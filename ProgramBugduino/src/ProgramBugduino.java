@@ -95,21 +95,21 @@ public class ProgramBugduino implements Tool {
 				if(this.verbose) System.err.println("invald settings set");
 				return; //settings not ok, quit
 			}
+			//find out if we want to use this once, or keep these settings	
+			Object[] options = { "Use Once", "Use this entire session" };
+			int result =  JOptionPane.showOptionDialog(null, "Use these settings once, or for "+
+				"this whole session?", "Warning",
+	            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+	            null, options, options[0]);
+		
+	 		if (result == JOptionPane.YES_OPTION)
+				resetAfterUse= 1;
+			else
+				resetAfterUse= 0;
 		}	
 
 		
-		//find out if we want to use this once, or keep these settings	
-		Object[] options = { "Use Once", "Use this entire session" };
-		int result =  JOptionPane.showOptionDialog(null, "Use these settings once, or for "+
-			"this whole session?", "Warning",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
-            null, options, options[0]);
-		
- 		if (result == JOptionPane.YES_OPTION)
-			resetAfterUse= 0;
-		else
-			resetAfterUse= 1;
-	
+
 	
 		// update sketch info
 		Sketch sk = editor.getSketch();
