@@ -10,7 +10,7 @@ echo "copy directory to the right location in the arduino_src tree"
 cp -R ${TOOL_NAME} ./arduino_src/Arduino/build/shared/tools/ 
 START_DIR=`pwd`
 
-echo "build Arduino jars, so we can comile against them"
+echo "build Arduino jars, so we can compile against them"
 cd arduino_src/Arduino/build/
 ant clean
 ant build

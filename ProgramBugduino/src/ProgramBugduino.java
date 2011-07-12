@@ -61,16 +61,17 @@ public class ProgramBugduino implements Tool {
 
 	Editor editor;
 	int slot;		/* target slot the bugduino is loaded into/on on the BugBase */ 
-	String ipAddr; /* IP address of the BugBase on the local network */
+	String ipAddr = "bug20.local" ; /* IP address of the BugBase on the local network */
     final int bugduinoPort= 8806; /* port used for the TCP/IP data transfer */
 	final boolean verbose = true; //for debugging
-	
+	final String defaultIpAddr ="bug20.local";
+ 
 	/* Standard Processing IDE tool init function. 
 	 */
 	public void init(Editor editor) {
 		this.editor = editor;
 		slot = -1;
-		ipAddr = "";
+		ipAddr = defaultIpAddr;
 	}
 
 	/* Standard Processing IDE tool menu item function 
@@ -85,12 +86,30 @@ public class ProgramBugduino implements Tool {
 	*/
 	 public void run() {
 		//This is modeled after Sketch's 'Export Applet' function
-		int keepSettings = 0;
+		int resetAfterUse= 0;
 	
 		if(this.slot == -1){
 			if(this.verbose) 	System.out.println("slot is -1!");
-			keepSettings = updateSettings();
-		}
+			int settingsOK = updateSettings();
+			if(settingsOK < 0)  {
+				if(this.verbose) System.err.println("invald settings set");
+				return; //settings not ok, quit
+			}
+		}	
+
+		
+		//find out if we want to use this once, or keep these settings	
+		Object[] options = { "Use Once", "Use this entire session" };
+		int result =  JOptionPane.showOptionDialog(null, "Use these settings once, or for "+
+			"this whole session?", "Warning",
+            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+            null, options, options[0]);
+		
+ 		if (result == JOptionPane.YES_OPTION)
+			resetAfterUse= 0;
+		else
+			resetAfterUse= 1;
+	
 	
 		// update sketch info
 		Sketch sk = editor.getSketch();
@@ -136,9 +155,6 @@ public class ProgramBugduino implements Tool {
 		return;
 	}
 	*/
-	if(keepSettings < 0) {
-		System.err.println("Error in generating settings: " + keepSettings);
-	}
 	
 	if(this.verbose)  System.out.println( "Uploading to BUGduino." );
 	System.out.println(sk.getCodeFolder().getPath() + " <-cf\n");
@@ -154,13 +170,12 @@ public class ProgramBugduino implements Tool {
 								this.ipAddr, this.bugduinoPort, this.slot, this.verbose );
  	
 		if(this.verbose) System.out.println("sendAVRProgramToBUG status: " + status);
-	 	if(this.verbose) System.out.println("keepSettings: " + keepSettings);
 	}
 	else {
-		System.err.println("avr file does not exist. Please rebuild your sketch");
+		System.err.println("avr file does not exist. Please verify/build your sketch");
 	}
 	//user specified one-time settings, wipe out settings
- 	if(keepSettings != 1) { 
+ 	if(resetAfterUse != 0) { 
 		this.wipeSettings();
 		return;
 	}
@@ -169,8 +184,8 @@ public class ProgramBugduino implements Tool {
 
 	/* Clears this classes  ipAddress and slot */
 	protected void wipeSettings() {
- 		if(this.verbose) System.out.println("wiping out ip addr and slot setting");
-		this.ipAddr = "";
+ 		if(this.verbose) System.out.println("resetting IP and slot info");
+		this.ipAddr = this.defaultIpAddr; 
 		this.slot = -1;
 	}
 
@@ -207,13 +222,15 @@ public class ProgramBugduino implements Tool {
             socketOutput = new DataOutputStream( rawSocketOutput );
             socketInput = new DataInputStream( rawSocketInput );
         } catch (UnknownHostException e) {
-            System.err.println( "ERROR: Could not contact host." );
-            e.printStackTrace();
+            System.err.println( "ERROR: Could not contact host:port " + bugAddress + " : " + port );
+            if(this.verbose) 
+				e.printStackTrace();
             return false;
         } catch (IOException e) {
-            System.err.println( "ERROR: Could not create connection to host." );
-            e.printStackTrace();
-        return false;
+            System.err.println( "ERROR: Couldhost:port " + bugAddress + " : " + port );
+            if(this.verbose) 
+				e.printStackTrace();
+	        return false;
         }
       /* only block for 5 seconds */
         try {
@@ -353,27 +370,25 @@ public class ProgramBugduino implements Tool {
 
 	
 	/* Gets updated IP and BugSlot settings from the user via dialog boxes
-	 * returns 1 if user as selected 'keep these settings this session
-	 * returns 0 if settings to be used only once
+	 * returns 0 if settings OK, negative otherwise
 	 * a negative value otherwise
 	 */
 	protected int updateSettings() {
-		int keepChanges = 0;
+
 		// grab the target IP addr from the user
 		String s = (String)JOptionPane.showInputDialog(
 			editor, "Please select your BugBase's IP address:",
 			"Set BugBase IP ", 	JOptionPane.PLAIN_MESSAGE,
-			null, null, "172.16.0.20");
+			null, null, this.ipAddr); 
 
 		//If a string was returned, say so.
 		if ((s != null) && (s.length() > 0)) {
 			this.ipAddr = s;
-			keepChanges= -1; //flag that settings changed 
 		}
-		else 
+		else { 
 			return -1; //failed to get an IP addr
-		s = null;
-	
+		}
+
 		//grab the slot target the user specifies
 		s  = (String)JOptionPane.showInputDialog(
 			editor, 
@@ -385,28 +400,14 @@ public class ProgramBugduino implements Tool {
 		//If a string was returned, say so.
 		if ((s != null) && (s.length() > 0)) {
 			this.slot = Integer.parseInt(s); 
-			keepChanges= -1; //flag that settings changed 
 			if(this.slot < 2 || this.slot > 3) { 
 				System.out.println("BETA: Only slots 0 - 3 are valid currently" );
 				return -2 ;//no not keep these settings
 			}
-		} else 
+		} else {
 			return -3; //failed to get an IP addr, do not keep settings
-		
-		//find out if we want to use this once, or keep these settings	
-		Object[] options = { "Use Once", "Use this entire session" };
-		int result =  JOptionPane.showOptionDialog(null, "Use these settings once, or for "+
-			"this whole session?", "Warning",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
-            null, options, options[0]);
-		
- 		if (result == JOptionPane.YES_OPTION)
-			keepChanges = 0;
-		else
-			keepChanges = 1;
-		
-		System.out.println("user would like to keep changes? " + keepChanges);
-		return keepChanges;
+		}
+		return 0;
 	}
 
 }
